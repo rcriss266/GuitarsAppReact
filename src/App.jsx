@@ -5,7 +5,8 @@ import Footer from './components/Footer'
 import { db } from './data/guitarras'
 
 function App() {
-  // Estado inicial del carrito buscando en LocalStorage
+
+  // Estado inicial del carrito desde LocalStorage
   const initialCart = () => {
     const localStorageCart = localStorage.getItem('carrito')
     return localStorageCart ? JSON.parse(localStorageCart) : []
@@ -14,22 +15,32 @@ function App() {
   const [data] = useState(db)
   const [cart, setCart] = useState(initialCart)
 
-  // Guardar en LocalStorage cada que el carrito cambie
+  // Agregar al carrito
+  function addToCart(item) {
+    const itemExists = cart.findIndex(guitar => guitar.id === item.id)
+
+    if (itemExists >= 0) {
+      const updatedCart = [...cart]
+      updatedCart[itemExists] = {
+        ...updatedCart[itemExists],
+        cantidad: updatedCart[itemExists].cantidad + 1
+      }
+      setCart(updatedCart)
+    } else {
+      setCart([
+        ...cart,
+        {
+          ...item,
+          cantidad: 1
+        }
+      ])
+    }
+  }
+
+  // Guardar carrito en LocalStorage
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(cart))
   }, [cart])
-
-  function addToCart(item) {
-    const itemExists = cart.findIndex(guitar => guitar.id === item.id)
-    if (itemExists >= 0) {
-      const updatedCart = [...cart]
-      updatedCart[itemExists].cantidad++
-      setCart(updatedCart)
-    } else {
-      item.cantidad = 1
-      setCart([...cart, item])
-    }
-  }
 
   return (
     <>
@@ -40,6 +51,7 @@ function App() {
       
       <main className="container-xl mt-5">
         <h2 className="text-center">Nuestra Colección</h2>
+
         <div className="row mt-5">
           {data.map((guitar) => (
             <Guitarra 
